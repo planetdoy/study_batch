@@ -6,47 +6,55 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
-@RequiredArgsConstructor
 @Configuration
-public class SimpleJobConfiguration {
+@RequiredArgsConstructor
+public class StepNextJobConfiguration {
+
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public Job simpleJob() {
-        return jobBuilderFactory.get("simpleJob")
-                .start(simpleStep1())
-                .next(simpleStep2())
+    public Job stepNextJob() {
+        return jobBuilderFactory.get("stepNextJob")
+                .start(step1())
+                .next(step2())
+                .next(step3())
                 .build();
     }
 
     @Bean
-    public Step simpleStep1() {
-        return stepBuilderFactory.get("simpleStep1") // "simpleStep1"란 이름의 Batch Step 생성
-                .tasklet((contribution, chunkContext) -> { // Step 안에서 수행될 기능들을 명시
-                    log.info(">>>>>> This is Step1");
+    public Step step3() {
+        return stepBuilderFactory.get("step3")
+                .tasklet((contribution, chunkContext) -> {
+                    log.info(">>> this is step3");
                     return RepeatStatus.FINISHED;
-//                    throw new IllegalArgumentException("step1 실패");
+                }).build();
+    }
+
+    @Bean
+    public Step step2() {
+        return stepBuilderFactory.get("step2")
+                .tasklet((contribution, chunkContext) -> {
+                    log.info(">>> this is step2");
+                    return RepeatStatus.FINISHED;
                 })
                 .build();
     }
 
     @Bean
-    public Step simpleStep2() {
-        return stepBuilderFactory.get("simpleStep2")
+    public Step step1() {
+        return stepBuilderFactory.get("step1")
                 .tasklet((contribution, chunkContext) -> {
-                    log.info(">>> This is Step2");
-
-                    log.info(">>> requestData = {}", "nothing");
-
+                    log.info(">>> this is step 1");
                     return RepeatStatus.FINISHED;
-                }).build();
+                })
+                .build();
     }
+
 
 }
